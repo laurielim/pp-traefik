@@ -1,0 +1,44 @@
+name: Deploy Traefik Config to Droplet
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'traefik.yml'
+      - 'traefik_dynamic.template.yml'
+      - 'docker-compose.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      BASIC_AUTH_ADMIN_HASH: ${{ secrets.BASIC_AUTH_ADMIN_HASH }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Inject secret into config
+      run: |
+        sed "s|\${BASIC_AUTH_ADMIN_HASH}|${BASIC_AUTH_ADMIN_HASH}|" traefik_dynamic.template.yml > traefik_dynamic.yml
+
+    - name: Copy files to droplet and restart Traefik
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.DEPLOY_SERVER_IP }}
+        username: deploy
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "traefik.yml,traefik_dynamic.yml,docker-compose.yml"
+        target: "/home/deploy/pp-traefik"
+
+    - name: SSH into droplet and restart service
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ secrets.DEPLOY_SERVER_IP }}
+        username: deploy
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /home/deploy/pp-traefik
+          docker-compose up -d
