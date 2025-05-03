@@ -6,7 +6,7 @@ on:
     paths:
       - 'traefik.yml'
       - 'traefik_dynamic.template.yml'
-      - 'docker-compose.yml'
+      - 'compose.yaml'
   workflow_dispatch:
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
         host: ${{ secrets.DEPLOY_SERVER_IP }}
         username: deploy
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "traefik.yml,traefik_dynamic.yml,docker-compose.yml"
+        source: "traefik.yml,traefik_dynamic.yml,compose.yaml"
         target: "/home/deploy/pp-traefik"
 
     - name: SSH into droplet and restart service
