@@ -41,4 +41,4 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd /home/deploy/pp-traefik
-          docker-compose up -d
+          docker compose up -d
