@@ -1,0 +1,17 @@
+http:
+  middlewares:
+    simpleAuth:
+      basicAuth:
+        users:
+          - "${BASIC_AUTH_ADMIN_HASH}"
+
+  routers:
+    api:
+      rule: "Host(`monitor.performance.mu`)"
+      entryPoints:
+        - "websecure"
+      middlewares:
+        - "simpleAuth"
+      service: "api@internal"
+      tls:
+        certResolver: "lets-encrypt"
