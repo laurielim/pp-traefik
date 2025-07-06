@@ -1,0 +1,4 @@
+# Never commit dumps
+db_backups/
+*.sql
+*.gz

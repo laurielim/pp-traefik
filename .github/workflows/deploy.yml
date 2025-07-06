@@ -3,10 +3,6 @@ name: Deploy Traefik Config to Droplet
 on:
   push:
     branches: [main]
-    paths:
-      - 'traefik.yml'
-      - 'traefik_dynamic.template.yml'
-      - 'compose.yaml'
   workflow_dispatch:
 
 jobs:
@@ -30,7 +26,7 @@ jobs:
         host: ${{ secrets.DEPLOY_SERVER_IP }}
         username: deploy
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "traefik.yml,traefik_dynamic.yml,compose.yaml"
+        source: "."
         target: "/home/deploy/pp-traefik"
 
     - name: SSH into droplet and restart service
@@ -42,3 +38,8 @@ jobs:
         script: |
           cd /home/deploy/pp-traefik
           docker compose up -d
+          chmod +x /home/deploy/pp-traefik/scripts/backup_db.sh
+          echo "MYSQL_DATABASE=${{ secrets.PROD_DB_NAME }}" > /home/deploy/pp-traefik/.env.prod
+          echo "MYSQL_USER=${{ secrets.PROD_DB_USER }}" >> /home/deploy/pp-traefik/.env.prod
+          echo "MYSQL_PASSWORD=${{ secrets.PROD_DB_PASS }}" >> /home/deploy/pp-traefik/.env.prod
+          chmod 600 /home/deploy/pp-traefik/.env.prod
